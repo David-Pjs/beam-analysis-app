@@ -29,7 +29,7 @@ const DiagramDisplay = ({ results }) => {
     return (
       <div className="results-panel">
         <h2>Results</h2>
-        <p style={{ color: '#999', textAlign: 'center', padding: '40px' }}>
+        <p style={{ color: '#6b6b7b', textAlign: 'center', padding: '60px 40px', fontSize: '1.1em' }}>
           Configure the beam and click "Analyze" to see results
         </p>
       </div>
@@ -43,10 +43,16 @@ const DiagramDisplay = ({ results }) => {
       {
         label: 'Shear Force (kN)',
         data: results.shear_force_diagram.map(point => point.value),
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        borderColor: '#f43f5e',
+        backgroundColor: 'rgba(244, 63, 94, 0.15)',
         fill: true,
         tension: 0.1,
+        borderWidth: 2,
+        pointBackgroundColor: '#f43f5e',
+        pointBorderColor: '#0a0a0f',
+        pointBorderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 6,
       },
     ],
   };
@@ -58,10 +64,16 @@ const DiagramDisplay = ({ results }) => {
       {
         label: 'Bending Moment (kN⋅m)',
         data: results.bending_moment_diagram.map(point => point.value),
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.15)',
         fill: true,
         tension: 0.4,
+        borderWidth: 2,
+        pointBackgroundColor: '#10b981',
+        pointBorderColor: '#0a0a0f',
+        pointBorderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 6,
       },
     ],
   };
@@ -73,10 +85,22 @@ const DiagramDisplay = ({ results }) => {
       legend: {
         display: true,
         position: 'top',
+        labels: {
+          color: '#a0a0b0',
+          font: { size: 12, weight: '600' },
+          padding: 20,
+        },
       },
       tooltip: {
         mode: 'index',
         intersect: false,
+        backgroundColor: '#1a1a24',
+        titleColor: '#ffffff',
+        bodyColor: '#a0a0b0',
+        borderColor: '#2a2a3a',
+        borderWidth: 1,
+        padding: 12,
+        cornerRadius: 8,
       },
     },
     scales: {
@@ -84,22 +108,32 @@ const DiagramDisplay = ({ results }) => {
         title: {
           display: true,
           text: 'Position along beam (m)',
-          font: { size: 14, weight: 'bold' }
+          color: '#a0a0b0',
+          font: { size: 13, weight: '600' }
         },
         grid: {
           display: true,
-          color: 'rgba(0, 0, 0, 0.05)',
+          color: 'rgba(99, 102, 241, 0.1)',
+        },
+        ticks: {
+          color: '#6b6b7b',
+          font: { size: 11 }
         },
       },
       y: {
         title: {
           display: true,
           text: 'Value',
-          font: { size: 14, weight: 'bold' }
+          color: '#a0a0b0',
+          font: { size: 13, weight: '600' }
         },
         grid: {
           display: true,
-          color: 'rgba(0, 0, 0, 0.05)',
+          color: 'rgba(99, 102, 241, 0.1)',
+        },
+        ticks: {
+          color: '#6b6b7b',
+          font: { size: 11 }
         },
       },
     },
@@ -135,7 +169,7 @@ const DiagramDisplay = ({ results }) => {
 
       {/* Support Reactions Table */}
       <div className="section">
-        <h3 style={{ fontSize: '1.3em', marginBottom: '15px' }}>Support Reactions</h3>
+        <h3 style={{ fontSize: '1.2em', marginBottom: '15px', color: '#ffffff', fontWeight: '700' }}>Support Reactions</h3>
         <table className="reactions-table">
           <thead>
             <tr>
@@ -177,11 +211,12 @@ const DiagramDisplay = ({ results }) => {
       {/* Support Moments */}
       {results.support_moments && results.support_moments.length > 0 && (
         <div className="section">
-          <h3 style={{ fontSize: '1.3em', marginBottom: '15px' }}>Support Moments</h3>
-          <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px' }}>
+          <h3 style={{ fontSize: '1.2em', marginBottom: '15px', color: '#ffffff', fontWeight: '700' }}>Support Moments</h3>
+          <div style={{ background: '#12121a', padding: '18px', borderRadius: '12px', border: '1px solid #2a2a3a' }}>
             {results.support_moments.map((moment, index) => (
-              <div key={index} style={{ marginBottom: '8px' }}>
-                <strong>Support {index + 1}:</strong> {moment.toFixed(3)} kN⋅m
+              <div key={index} style={{ marginBottom: '10px', color: '#a0a0b0', display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: '#6366f1', fontWeight: '600' }}>Support {index + 1}</span>
+                <span style={{ fontFamily: 'monospace', color: '#ffffff' }}>{moment.toFixed(3)} kN⋅m</span>
               </div>
             ))}
           </div>

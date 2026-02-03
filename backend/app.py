@@ -3,8 +3,10 @@ Flask API for Beam and Frame Analysis
 """
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from functools import wraps
 import sys
 import os
+import time
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -15,7 +17,52 @@ from models.load import PointLoad, UniformlyDistributedLoad, VaryingDistributedL
 from calculations.beam_analysis import analyze_continuous_beam
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for React frontend
+
+# Security: Configure CORS with specific origins
+ALLOWED_ORIGINS = [
+    "https://frontend-smoky-nine-14.vercel.app",
+    "https://*.vercel.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
+CORS(app, origins=ALLOWED_ORIGINS, methods=["GET", "POST", "OPTIONS"])
+
+# Security: Rate limiting (simple in-memory implementation)
+rate_limit_store = {}
+RATE_LIMIT = 60  # requests per minute
+RATE_WINDOW = 60  # seconds
+
+def get_client_ip():
+    """Get client IP address"""
+    if request.headers.get('X-Forwarded-For'):
+        return request.headers.get('X-Forwarded-For').split(',')[0].strip()
+    return request.remote_addr or 'unknown'
+
+def rate_limit(f):
+    """Rate limiting decorator"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        client_ip = get_client_ip()
+        current_time = time.time()
+
+        # Clean old entries
+        rate_limit_store[client_ip] = [
+            t for t in rate_limit_store.get(client_ip, [])
+            if current_time - t < RATE_WINDOW
+        ]
+
+        if len(rate_limit_store.get(client_ip, [])) >= RATE_LIMIT:
+            return jsonify({'error': 'Rate limit exceeded. Please try again later.'}), 429
+
+        rate_limit_store.setdefault(client_ip, []).append(current_time)
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Security: Input validation limits
+MAX_BEAM_LENGTH = 1000  # meters
+MAX_SUPPORTS = 20
+MAX_LOADS = 50
+MAX_MAGNITUDE = 1e12
 
 
 @app.route('/')
@@ -38,6 +85,7 @@ def health():
 
 
 @app.route('/analyze', methods=['POST'])
+@rate_limit
 def analyze():
     """
     Main analysis endpoint
@@ -70,6 +118,16 @@ def analyze():
         for field in required_fields:
             if field not in data:
                 return jsonify({'error': f'Missing required field: {field}'}), 400
+
+        # Security: Validate input limits
+        if not isinstance(data['length'], (int, float)) or data['length'] <= 0 or data['length'] > MAX_BEAM_LENGTH:
+            return jsonify({'error': f'Beam length must be between 0 and {MAX_BEAM_LENGTH} meters'}), 400
+
+        if len(data['supports']) > MAX_SUPPORTS:
+            return jsonify({'error': f'Maximum {MAX_SUPPORTS} supports allowed'}), 400
+
+        if len(data['loads']) > MAX_LOADS:
+            return jsonify({'error': f'Maximum {MAX_LOADS} loads allowed'}), 400
 
         # Create beam
         beam = Beam(
@@ -136,6 +194,7 @@ def analyze():
 
 
 @app.route('/validate', methods=['POST'])
+@rate_limit
 def validate_input():
     """Validate input without performing analysis"""
     try:

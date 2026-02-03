@@ -37,9 +37,7 @@ const BeamInput = ({ onBeamChange }) => {
           onChange={(e) => handleChange('E', e.target.value)}
           placeholder="e.g., 200000000 for steel"
         />
-        <small style={{ color: '#666', fontSize: '0.85em' }}>
-          Default: 200 GPa (Steel)
-        </small>
+        <small>Default: 200 GPa (Steel)</small>
       </div>
 
       <div className="input-group">
@@ -51,9 +49,7 @@ const BeamInput = ({ onBeamChange }) => {
           onChange={(e) => handleChange('I', e.target.value)}
           placeholder="e.g., 0.0001"
         />
-        <small style={{ color: '#666', fontSize: '0.85em' }}>
-          Cross-sectional property
-        </small>
+        <small>Cross-sectional property</small>
       </div>
     </div>
   );
